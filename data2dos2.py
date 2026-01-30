@@ -3,16 +3,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pythtb import tb_model
 import csv
+from numba import jit 
+from numba import prange
+from joblib import Parallel, delayed 
 
 # Parameter
 delta = 0.7     # Onsite energy
 t = -1.0        # Hopping
-soc = 0.24      # Spin-orbit coupling (SOC)
-rashba = 0.05   # Rashba coupling
-width = 10      # Lebar ribbon
+soc = 1.24      # Spin-orbit coupling (SOC)
+rashba = 0.4   # Rashba coupling
+width = 30      # Lebar ribbon
 nkr = 101       # Jumlah k-points
-n_samples = 10  # Jumlah realisasi disorder
-W_values = np.linspace(0, 10, 10) * soc  # Rentang W yang diuji
+n_samples = 100  # Jumlah realisasi disorder
+W_values = np.linspace(0, 50, 25) * soc  # Rentang W yang diuji
 
 def set_model(t, soc, rashba, delta, W):
     # Set up model Kane-Mele dengan disorder
@@ -73,9 +76,9 @@ def set_model(t, soc, rashba, delta, W):
 # List untuk menyimpan DOS pada E=0
 dos_at_zero = []
 
-for W in W_values:
+def simulate_for_single_w(W):
     all_eigenvalues = []
-    for _ in range(n_samples):
+    for _ in prange(n_samples):
         # Bangun model dengan disorder W
         my_model = set_model(t, soc, rashba, delta, W)
         
@@ -96,20 +99,14 @@ for W in W_values:
     # Hitung histogram dan ekstrak DOS pada E=0
     hist, bin_edges = np.histogram(combined_eval, bins=50, range=(-4., 4.), density=True)
     bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
-    idx_zero = np.argmin(np.abs(bin_centers))  # Indeks bin terdekat E=0
-    dos_at_zero.append(hist[idx_zero])
+    idx_zero = np.argmin(np.abs(bin_centers - (0.35)))
+    return hist[idx_zero]
 
-# Menyimpan data ke dalam file CSV
-with open('dos_at_zero.csv', mode='w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(["W/soc", "DOS at E=0"])  # Menulis header
-    for W, dos in zip(W_values / soc, dos_at_zero):
-        writer.writerow([W, dos])  # Menulis setiap baris data
+results = Parallel(n_jobs=-1)(
+    delayed(simulate_for_single_w)(W) for W in W_values
+)
 
-
-# Plot hasil
-#z2 =ribbon_model.z2_invariant()
-#print(f"Z2 invariant: {z2}")
+dos_at_zero = np.array(results)
 plt.plot(W_values/soc, dos_at_zero, 'o-', label='Simulasi')
 plt.axvline(x=2.5, c='r', ls='--', label='Prediksi $W_c=2.5\lambda_{SO}$')
 plt.xlabel("$W/\lambda_{SO}$")
