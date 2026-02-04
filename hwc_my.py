@@ -60,8 +60,8 @@ def get_my_model(phase):
         my_model.set_hop(soc_val * 1j * sigma_z, 1, 1, lvec)
 
     # 3. Interlayer / Vertical Hopping (Ciri khas model anda)
-    my_model.set_hop(0.3 * soc_val * 1j * sigma_z, 1, 1, [0, 0, 1])
-    my_model.set_hop(-0.3 * soc_val * 1j * sigma_z, 0, 0, [0, 0, 1])
+    my_model.set_hop(0.1 * soc_val * 1j * sigma_z, 1, 1, [0, 0, 1])
+    my_model.set_hop(-0.1 * soc_val * 1j * sigma_z, 0, 0, [0, 0, 1])
 
     # 4. Rashba Coupling
     # Perhatikan mode="add"
