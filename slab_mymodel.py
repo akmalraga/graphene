@@ -1,50 +1,25 @@
 from pythtb import TBModel, Lattice
-
 import numpy as np
-
 import matplotlib
-
 matplotlib.use('TkAgg')
-
 import matplotlib.pyplot as plt
-
-
 delta = 0.0
-
 t = 1.0
-
 soc_val = 0.125
-
 rashba = 0.05
-
-width = 10
-
-nkr = 101
-
-n_avg = 100
-
 W = 0 * soc_val
-
 
 # Matriks Pauli
 
 sigma_z = np.array([0., 0., 0., 1.])
-
 sigma_x = np.array([0., 1., 0., 0])
-
 sigma_y = np.array([0., 0., 1., 0])
 
 r3h = np.sqrt(3.0) / 2.0
 
 sigma_a = 0.5 * sigma_x - r3h * sigma_y
-
 sigma_b = 0.5 * sigma_x + r3h * sigma_y
-
 sigma_c = -1.0 * sigma_x
-
-
-data_csv =[]
-
 
 def set_model(t, soc, rashba, delta, W):
 
@@ -86,9 +61,9 @@ def set_model(t, soc, rashba, delta, W):
         model.set_hop(soc * 1.j * sigma_z, 1, 1, lvec)
 
 
-    model.set_hop(0.3 * soc * 1j * sigma_z, 1, 1, [0, 0, 1])
+    model.set_hop(0.1 * soc * 1j * sigma_z, 1, 1, [0, 0, 1])
 
-    model.set_hop(-0.3 * soc * 1j * sigma_z, 0, 0, [0, 0, 1])
+    model.set_hop(-0.1 * soc * 1j * sigma_z, 0, 0, [0, 0, 1])
 
 
     model.set_hop(1.j * rashba * sigma_a, 0, 1, [0, 0, 0], mode="add")
@@ -109,7 +84,7 @@ print(my_model)
 
 my_model.info()
 
-fin_model = my_model.make_finite(periodic_dirs=[0], num_cells=[20])
+fin_model = my_model.make_finite(periodic_dirs=[1], num_cells=[20])
 
 k_nodes = [[0, 0], [0.5, 0], [0.5, 0.5], [0, 0], [0, 0.5]]
 k_labels = [
@@ -120,6 +95,7 @@ k_labels = [
     r"$\bar{Y}$",
 ]
 
+fin_model.visualize_3d(draw_hoppings=True)
 
 fig, ax = fin_model.plot_bands(
     nk=500, k_nodes=k_nodes, k_node_labels=k_labels, proj_orb_idx=[1]
